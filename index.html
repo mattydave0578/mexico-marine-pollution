@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floating Plastic Debris & Surface Pollutants - Mexico Coastal Waters</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a3a52 0%, #2c5f7f 100%);
+            color: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0d2b3e 0%, #1a4d6b 100%);
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #e0f2ff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .header p {
+            font-size: 1em;
+            color: #b8d4e8;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        #map {
+            height: 75vh;
+            width: 100%;
+            border-top: 3px solid #2c5f7f;
+            border-bottom: 3px solid #2c5f7f;
+        }
+
+        .info-panel {
+            background: linear-gradient(135deg, #0d2b3e 0%, #1a4d6b 100%);
+            padding: 30px;
+            margin: 0;
+        }
+
+        .legend {
+            background: rgba(13, 43, 62, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 1200px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .legend h3 {
+            margin-bottom: 15px;
+            color: #e0f2ff;
+            font-size: 1.3em;
+            border-bottom: 2px solid #2c5f7f;
+            padding-bottom: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(44, 95, 127, 0.3);
+            border-radius: 5px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .high-pollution { background: #8b4545; }
+        .moderate-pollution { background: #b8860b; }
+        .river-discharge { background: #4a7c8a; }
+        .hydrocarbon-zone { background: #5c4d3d; }
+
+        .references {
+            background: rgba(13, 43, 62, 0.95);
+            padding: 25px;
+            margin: 20px auto;
+            max-width: 1200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .references h3 {
+            margin-bottom: 15px;
+            color: #e0f2ff;
+            font-size: 1.3em;
+            border-bottom: 2px solid #2c5f7f;
+            padding-bottom: 10px;
+        }
+
+        .references ol {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #b8d4e8;
+        }
+
+        .references li {
+            margin-bottom: 10px;
+        }
+
+        .references a {
+            color: #7eb5d6;
+            text-decoration: none;
+        }
+
+        .references a:hover {
+            color: #a8d5f2;
+            text-decoration: underline;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: linear-gradient(135deg, #0d2b3e 0%, #1a4d6b 100%);
+            color: #e0f2ff;
+            border-radius: 8px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+        }
+
+        .leaflet-popup-content {
+            margin: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .leaflet-popup-content h4 {
+            color: #a8d5f2;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            border-bottom: 1px solid #2c5f7f;
+            padding-bottom: 5px;
+        }
+
+        .leaflet-popup-tip {
+            background: #1a4d6b;
+        }
+
+        .data-note {
+            background: rgba(139, 69, 69, 0.2);
+            padding: 15px;
+            border-left: 4px solid #8b4545;
+            margin: 20px auto;
+            max-width: 1200px;
+            border-radius: 5px;
+        }
+
+        .data-note p {
+            color: #e0f2ff;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        footer {
+            background: #0d2b3e;
+            padding: 20px;
+            text-align: center;
+            color: #b8d4e8;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌊 Floating Plastic Debris & Surface Pollutants in Mexican Coastal Waters</h1>
+        <p>Interactive Map: Port Basins, Marinas, and Nearshore Waterways - Hydrocarbon Films & Plastic Debris Distribution</p>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="info-panel">
+        <div class="legend">
+            <h3>📊 Pollution Level Categories</h3>
+            <div class="legend-item">
+                <div class="legend-color high-pollution"></div>
+                <span><strong>High Pollution:</strong> Extensive plastic debris, fishing gear accumulation, elevated PAH levels</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color moderate-pollution"></div>
+                <span><strong>Moderate Pollution:</strong> Significant microplastic presence, tourist-related debris</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color river-discharge"></div>
+                <span><strong>Major River Discharge:</strong> Primary plastic input pathways (>1,000 tons/year)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color hydrocarbon-zone"></div>
+                <span><strong>Hydrocarbon Pollution:</strong> Elevated PAH exposure, oil infrastructure impacts</span>
+            </div>
+        </div>
+
+        <div class="data-note">
+            <p><strong>⚠️ Data Period:</strong> Research compiled from studies conducted 2011-2025. Pollution levels represent documented field measurements of floating marine debris (FMD), microplastics, macroplastics, and polycyclic aromatic hydrocarbons (PAHs) in biliary samples and sediments. River discharge data based on 2023 National Inventory of Sources of Plastic Pollution.</p>
+        </div>
+
+        <div class="references">
+            <h3>📚 References & Data Sources</h3>
+            <ol>
+                <li>Álvarez-Aguilar et al. (2017). "Floating Marine Debris in waters of the Mexican Central Pacific." <em>Marine Pollution Bulletin</em>, 115(1-2), 225-232. <a href="https://www.sciencedirect.com/science/article/abs/pii/S0025326X16309857" target="_blank">DOI Link</a></li>
+                
+                <li>Pulster, E.L. et al. (2020). "A First Comprehensive Baseline of Hydrocarbon Pollution in Gulf of Mexico Fishes." <em>Scientific Reports</em>, 10, 6437. <a href="https://www.nature.com/articles/s41598-020-62944-6" target="_blank">DOI Link</a></li>
+                
+                <li>Morales Jiménez, C. et al. (2023). "Macroplastics in the Bottom of the Veracruz Reef System National Park." <em>Sustainability</em>, 15(8), 6934. <a href="https://www.mdpi.com/2071-1050/15/8/6934" target="_blank">DOI Link</a></li>
+                
+                <li>Vázquez Morilla, A. (2023). "National Inventory of Sources of Plastic Pollution (PlanRemar)." Autonomous Metropolitan University & SEMARNAT. <a href="https://causanaturamedia.com/en/notas/from-the-sewer-to-the-ocean-12-mexican-rivers-discharge-more-than-148000-tons-of-plastic-into-the-sea" target="_blank">Report Link</a></li>
+                
+                <li>Oceanographic Magazine (2025). "From rivers to dinner: Gulf of Mexico marine plastics mapped." CMCC Research. <a href="https://oceanographicmagazine.com/news/from-rivers-to-dinner-gulf-of-mexico-marine-plastics-mapped/" target="_blank">Article Link</a></li>
+                
+                <li>Parley for the Oceans (2024). "Combating Marine Plastic Pollution in Mexico." <a href="https://parley.tv/journal/combating-marine-plastic-pollution-mexico" target="_blank">Report Link</a></li>
+                
+                <li>ResearchGate (2025). "Characterizing plastic pollution on beaches of Cozumel Island, Mexico." <em>Marine Pollution Research</em>. <a href="https://www.researchgate.net/publication/387040659" target="_blank">Study Link</a></li>
+                
+                <li>MDPI (2024). "Macroplastic and Microparticle Pollution in Beach Sediments from Urias Coastal Lagoon, Sinaloa, Mexico." <em>Coasts</em>, 12(6), 439. <a href="https://www.mdpi.com/2305-6304/12/6/439" target="_blank">DOI Link</a></li>
+                
+                <li>IntechOpen (2019). "Pollution Issues in Coastal Lagoons in the Gulf of Mexico." <a href="https://www.intechopen.com/chapters/67398" target="_blank">Chapter Link</a></li>
+                
+                <li>Duke University Nicholas Institute (2023). "Plastic Pollution Policy Country Profile: Mexico." <a href="https://nicholasinstitute.duke.edu/sites/default/files/projects/Plastic-Pollution-Policy-Country-Profile-Mexico.pdf" target="_blank">PDF Report</a></li>
+            </ol>
+        </div>
+    </div>
+
+    <footer>
+        <p>Data compiled from peer-reviewed scientific literature and government environmental reports (2011-2025)</p>
+        <p>Map created for research and environmental awareness purposes</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map centered on Mexico
+        const map = L.map('map').setView([23.6345, -102.5528], 5);
+
+        // Add tile layer with ocean-themed styling
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Pollution data points
+        const pollutionSites = [
+            // Gulf of Mexico - North Central (Highest PAH levels)
+            {
+                lat: 28.5, lng: -90.5,
+                name: "North Central Gulf of Mexico",
+                type: "high",
+                pollution: "Highest PAH exposure levels in Gulf (173% increase 2011-2017)",
+                details: "Adjacent to Mississippi River Delta. Mean biliary PAH: 640 µg/g. Hotspot for hydrocarbon contamination from oil infrastructure, riverine input, ongoing leaks (Taylor Energy MC20).",
+                source: "Pulster et al. 2020"
+            },
+            
+            // Veracruz - Major port and reef pollution
+            {
+                lat: 19.2006, lng: -96.1429,
+                name: "Port of Veracruz & Veracruz Reef System",
+                type: "high",
+                pollution: "57% fishing gear, 14% plastic fragments, 9% textiles",
+                details: "Veracruz Reef System National Park: 21 macroplastics documented. Predominant: nylon fishing nets/lines (55%), PP, PVC, polyester fragments. 90% biofouling present. Proximity to urban center (1.8M tourists/year), 32M tons cargo movement.",
+                source: "Morales Jiménez et al. 2023"
+            },
+
+            // Ruíz River (Río Grande de Santiago) - Largest plastic discharge
+            {
+                lat: 21.7647, lng: -105.4117,
+                name: "Ruíz River Mouth (Río Grande de Santiago)",
+                type: "river",
+                pollution: "77,592 tons plastic/year into Pacific Ocean",
+                details: "Largest plastic discharge point in Mexico. Nayarit state. Wastewater from Guadalajara metro area. Primary pollutants: bottles, food packaging, disposable items.",
+                source: "Vázquez Morilla 2023, SEMARNAT"
+            },
+
+            // Pánuco/Guayalejo River
+            {
+                lat: 22.2333, lng: -97.8,
+                name: "Pánuco-Guayalejo River System",
+                type: "river",
+                pollution: "26,719 tons plastic/year into Gulf of Mexico",
+                details: "Drains Mexico City wastewater via Moctezuma-Tula basin. Tamaulipas-Veracruz border. Second-largest plastic contributor. Microplastic hotspot downstream.",
+                source: "Vázquez Morilla 2023"
+            },
+
+            // Mexican Central Pacific
+            {
+                lat: 18.9, lng: -104.9,
+                name: "Mexican Central Pacific (Jalisco-Colima-Michoacán)",
+                type: "moderate",
+                pollution: "1,820 FMD objects recorded: 79.7% plastic, 8.9% Styrofoam",
+                details: "Coastal & oceanic zones to 100 nm offshore. Highest densities in autumn. Textile (0.16%), Styrofoam (8.9%), plastics dominate. Sources: shipping lanes, coastal cities, fishing grounds.",
+                source: "Álvarez-Aguilar et al. 2017"
+            },
+
+            // Cozumel Island
+            {
+                lat: 20.4230, lng: -86.9223,
+                name: "Cozumel Island, Quintana Roo",
+                type: "moderate",
+                pollution: "International debris influx, 70% single-use plastics",
+                details: "Caribbean Sea tourism hotspot. 91% of debris is plastic: ~70% single-use items, ~25% fishing gear. Higher debris on windward beaches. Ocean currents carry international waste.",
+                source: "ResearchGate 2025, PubMed 2025"
+            },
+
+            // Cancún & Playa del Carmen
+            {
+                lat: 21.1619, lng: -86.8515,
+                name: "Cancún - Playa del Carmen Corridor",
+                type: "moderate",
+                pollution: "57% fish sampled contain microplastics (>1,000 particles)",
+                details: "Major tourism zone. Microplastic contamination in marine food web. Puerto Morelos microplastic cleanup initiatives (2025). Tourism-related debris: bottles, food packaging, straws.",
+                source: "Wired 2025, NOAA 2025"
+            },
+
+            // Coatzacoalcos River & Port
+            {
+                lat: 18.1349, lng: -94.4072,
+                name: "Coatzacoalcos River & Port",
+                type: "hydrocarbon",
+                pollution: "4,846 tons plastic/year + petrochemical PAH contamination",
+                details: "Veracruz state. Industrial port with petrochemical facilities. Combined plastic discharge and hydrocarbon pollution. PAH levels elevated in sediments from oil industry activities.",
+                source: "Vázquez Morilla 2023, IntechOpen 2019"
+            },
+
+            // Gulf of Mexico Veracruz Rivers Complex
+            {
+                lat: 20.3, lng: -96.7,
+                name: "Veracruz Rivers Complex (Tuxpan, Nautla, Actopan, La Antigua, Cazones)",
+                type: "river",
+                pollution: "12,307 tons plastic/year (combined discharge)",
+                details: "Five-river system in Veracruz state discharging to Gulf. Microplastics detected in coastal lagoons (Alvarado, Tampamachoco). Elevated hydrocarbon levels in lagoon sediments.",
+                source: "Vázquez Morilla 2023"
+            },
+
+            // Suchiate River (Chiapas)
+            {
+                lat: 14.6953, lng: -92.2495,
+                name: "Suchiate River, Chiapas",
+                type: "river",
+                pollution: "8,731 tons plastic/year into Pacific",
+                details: "Mexico-Guatemala border. High informal waste collection. Plastic from agricultural packaging, food containers. Poor waste management infrastructure in region.",
+                source: "Vázquez Morilla 2023"
+            },
+
+            // Verde River (Oaxaca)
+            {
+                lat: 15.9, lng: -95.7,
+                name: "Verde River (Atoyac system), Oaxaca",
+                type: "river",
+                pollution: "5,297 tons plastic/year into Pacific",
+                details: "Part of Atoyac River drainage. Oaxaca state. Sources: urban runoff, agricultural areas. Limited waste collection (>500 tons uncollected annually in Oaxaca).",
+                source: "Vázquez Morilla 2023"
+            },
+
+            // Colorado River (Baja California)
+            {
+                lat: 31.8, lng: -114.8,
+                name: "Colorado River Delta, Baja California",
+                type: "river",
+                pollution: "9,950 tons plastic/year into Gulf of California",
+                details: "US-Mexico transboundary river. Reduced flow impacts delta ecosystem. Plastic from both nations. Upper Gulf of California Vaquita habitat affected by microplastics.",
+                source: "Vázquez Morilla 2023, MDPI 2023"
+            },
+
+            // La Paz & Gulf of California
+            {
+                lat: 24.1426, lng: -110.3128,
+                name: "La Paz & Gulf of California (Sea of Cortez)",
+                type: "moderate",
+                pollution: "Tourism-related debris, fishing gear, microplastics in neuston",
+                details: "Baja California Sur. Whale shark & sea lion habitat. Microplastics detected in surface waters. 2018 state legislation reduced single-use plastics. Marina and port activities contribute debris.",
+                source: "ScienceDirect 2023, Ecomigrations 2024"
+            },
+
+            // Bay of Campeche
+            {
+                lat: 19.5, lng: -92.5,
+                name: "Bay of Campeche (Cantarell Oil Field)",
+                type: "hydrocarbon",
+                pollution: "Lowest PAH in fish but persistent oil seeps & spills",
+                details: "Paradoxically lowest biliary PAH levels in Gulf fish despite Cantarell Oil Complex, 1979 Ixtoc 1 spill (3M barrels), active natural seeps. Narrow shelf + wave action may flush contaminants.",
+                source: "Pulster et al. 2020"
+            },
+
+            // Mazatlán (Sinaloa)
+            {
+                lat: 23.2494, lng: -106.4111,
+                name: "Mazatlán, Sinaloa",
+                type: "moderate",
+                pollution: "Coastal resort marina debris, Urias Lagoon contamination",
+                details: "Pacific coast resort. Urias coastal lagoon: significant macro/microplastics in beach sediments. Tourism + fishing activities. Fragments, films, fibers documented.",
+                source: "MDPI 2024"
+            },
+
+            // Acapulco
+            {
+                lat: 16.8531, lng: -99.8237,
+                name: "Acapulco, Guerrero",
+                type: "moderate",
+                pollution: "Major tourism port, beach & marina plastic debris",
+                details: "Pacific resort city & commercial port. High tourism generates single-use plastic waste. Limited waste management. Beach surveys show bottles, food containers, bags predominant.",
+                source: "Field observations, tourism reports"
+            },
+
+            // Puerto Vallarta
+            {
+                lat: 20.6534, lng: -105.2253,
+                name: "Puerto Vallarta, Jalisco",
+                type: "moderate",
+                pollution: "Beach microplastics: fragments > films > fibers",
+                details: "Major Pacific tourist destination. Sandy beach microplastic surveys: 3,820 MP/kg dry sediment. Predominant: fragments, followed by films. Tourism and maritime activities primary sources.",
+                source: "MDPI 2023"
+            },
+
+            // Manzanillo Port
+            {
+                lat: 19.0519, lng: -104.3192,
+                name: "Port of Manzanillo, Colima",
+                type: "moderate",
+                pollution: "Largest Pacific port: cargo-related debris",
+                details: "Mexico's largest Pacific container port (32M+ tons cargo). Industrial maritime operations. Plastic strapping, containers, fishing gear from port activities. Expansion ongoing.",
+                source: "Port reports"
+            },
+
+            // Tampico-Madero
+            {
+                lat: 22.2331, lng: -97.8641,
+                name: "Tampico-Madero Port Complex, Tamaulipas",
+                type: "hydrocarbon",
+                pollution: "Petrochemical port: oil/plastic combined contamination",
+                details: "Major Gulf oil refining center. Pánuco River discharge point. Petrochemical facilities contribute PAHs. Plastic waste from industrial + urban sources. Tampamachoco lagoon shows elevated contamination.",
+                source: "IntechOpen 2019"
+            },
+
+            // Laguna de Términos (Campeche)
+            {
+                lat: 18.6333, lng: -91.5833,
+                name: "Laguna de Términos, Campeche",
+                type: "hydrocarbon",
+                pollution: "Protected area with oil/plastic pollution from petroleum industry",
+                details: "Major coastal lagoon ecosystem. Oil industry impacts from Ciudad del Carmen petroleum hub. PAHs, chlorinated hydrocarbons in sediments. Plastic waste from urban + industrial sources.",
+                source: "IntechOpen 2019, Springer 2023"
+            },
+
+            // Progreso Port (Yucatán)
+            {
+                lat: 21.2854, lng: -89.6651,
+                name: "Progreso Port, Yucatán",
+                type: "moderate",
+                pollution: "Cruise ship port, beach pollution concerns",
+                details: "Yucatán's main port. Cruise tourism + cargo operations. Beach pollution warnings issued. Proximity to Celestún biosphere. Microplastics in Yucatán Shelf waters (PAH hotspot offshore).",
+                source: "Mexico News, Pulster et al. 2020"
+            },
+
+            // San Pedro River (Nayarit)
+            {
+                lat: 21.8, lng: -105.45,
+                name: "San Pedro River, Nayarit",
+                type: "river",
+                pollution: "3,275 tons plastic/year into Pacific",
+                details: "Nayarit coast. Contributes to coastal pollution near Ruíz River system. Agricultural and urban waste sources.",
+                source: "Vázquez Morilla 2023"
+            },
+
+            // Ensenada (Baja California)
+            {
+                lat: 31.8667, lng: -116.6,
+                name: "Ensenada, Baja California",
+                type: "moderate",
+                pollution: "Pacific port & cruise destination debris",
+                details: "Major Pacific coast port city. Wine region tourism + maritime commerce. Plastic waste from cruise ships, fishing fleet, urban sources. Beach cleanup efforts ongoing.",
+                source: "Local reports"
+            }
+        ];
+
+        // Create custom icons
+        function getIcon(type) {
+            const colors = {
+                'high': '#8b4545',
+                'moderate': '#b8860b',
+                'river': '#4a7c8a',
+                'hydrocarbon': '#5c4d3d'
+            };
+
+            return L.divIcon({
+                className: 'custom-icon',
+                html: `<div style="background-color: ${colors[type]}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.6); box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+        }
+
+        // Add markers
+        pollutionSites.forEach(site => {
+            const marker = L.marker([site.lat, site.lng], {
+                icon: getIcon(site.type)
+            }).addTo(map);
+
+            marker.bindPopup(`
+                <h4>${site.name}</h4>
+                <p><strong>Pollution Level:</strong> ${site.pollution}</p>
+                <p><strong>Details:</strong> ${site.details}</p>
+                <p style="margin-top:10px; font-size:0.85em; color:#7eb5d6;"><em>Source: ${site.source}</em></p>
+            `);
+        });
+
+        // Add scale
+        L.control.scale({imperial: false, metric: true}).addTo(map);
+    </script>
+</body>
+</html>
